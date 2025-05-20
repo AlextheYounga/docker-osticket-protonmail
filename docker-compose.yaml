@@ -1,0 +1,90 @@
+name: osticket
+services:
+  osticket-app:
+    image: tiredofit/osticket
+    container_name: osticket-app
+    volumes:
+      - ./src/data/:/www/osticket
+      - ./src/logs/:/www/logs
+    environment:
+      - ENABLE_MONITORING=${ENABLE_MONITORING}
+      - TIMEZONE=${TIMEZONE}
+      - CONTAINER_NAME=osticket-app
+      - CRON_INTERVAL=${CRON_INTERVAL}
+
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+
+      # These SMTP settings can later be replaced with
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_FROM=${SMTP_FROM}
+      - SMTP_TLS=${SMTP_TLS}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+
+      - INSTALL_SECRET=${INSTALL_SECRET}
+      - INSTALL_EMAIL=${INSTALL_EMAIL}
+      - INSTALL_NAME=${INSTALL_NAME}
+
+      - ADMIN_FIRSTNAME=${ADMIN_FIRSTNAME}
+      - ADMIN_LASTNAME=${ADMIN_LASTNAME}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_USER=${ADMIN_USER}
+      - ADMIN_PASS=${ADMIN_PASS}
+
+    # Map container port 80 to host port 3000 on 127.0.0.1
+    ports:
+      - "127.0.0.1:3000:80"
+    networks:
+      - localnet
+    deploy:
+      resources:
+        limits:
+          memory: 250m 
+    restart: unless-stopped
+
+  osticket-db:
+    image: mariadb:10.6
+    container_name: osticket-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - localnet
+    ports:
+      - "127.0.0.1:3306:3306"
+    deploy:
+      resources:
+        limits:
+          memory: 250m  
+    restart: unless-stopped
+
+  protonmail-bridge:
+    container_name: protonmail-bridge
+    image: shenxn/protonmail-bridge
+    # For RaspberryPi OS or aarch64 Linux in general
+    # image: shenxn/protonmail-bridge:build
+    ports:
+      - "127.0.0.1:1025:25/tcp"
+      - "127.0.0.1:1143:143/tcp"
+    restart: unless-stopped
+    volumes:
+      - protonmail:/root
+    networks:
+      - localnet
+
+volumes:
+  mariadb_data:
+  protonmail:
+    name: protonmail
+
+networks:
+  localnet:
+    driver: bridge

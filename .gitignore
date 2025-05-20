@@ -1,0 +1,14 @@
+.DS_Store
+*.DS_Store
+*.log
+*.zst
+.env
+.env*
+!.env.example
+!*.gpg
+__trash__
+*.sql
+*.zip
+__local__
+src/*
+!src/.gitkeep
